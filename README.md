@@ -86,7 +86,7 @@ zone "IP_SERVIDOR.in-addr.arpa" { ; (ejemplo "0.168.192.in-addr.arpa")
 - Editamos el archivo _forward.DOMINIO.CONTRATADO.ALGO_ dejandolo convenientemente similar a:
 ```
 $TTL    3D
-@       IN      SOA     DOMINIO.CONTRATADO.ALGO. root.DOMINIO.CONTRATADO.ALGO. (
+@       IN      SOA     DOMINIO.CONTRATADO.ALGO. mail.responsable. (
                         2          ; Serial // incrementar en cada modificacion
                         8H         ; Refresh
                         2H         ; Retry
@@ -94,21 +94,26 @@ $TTL    3D
                         1D )       ; Negative Cache TTL
 
 ;Definition of name server for DOMINIO.CONTRATADO.ALGO
-        NS      ns1
-;Resolved dns to IP address
-ns1     IN      A       IP_SERVIDOR
-@       IN      A       IP_SERVIDOR
-;Other domains for DOMINIO.CONTRATADO.ALGO
-test    IN      A       IP_SERVIDOR
-www     IN      CNAME   ns1
-ejemplo IN      A       IP_SERVIDOR
+        NS      ns1.DOMINIO.CONTRATADO.ALGO
+        NS      ns2.DOMINIO.CONTRATADO.ALGO
+        TXT     "zona DNS-> DOMINIO.CONTRATADO.ALGO!!"
+        HINFO   "VPS Server"    "Debian 11"
 
+;Resolved dns to IP address
+localhost   IN  A   127.0.0.1
+ns1         IN  A   IP_SERVIDOR
+ns2         IN  A   IP_SERVIDOR
+@           IN  A   IP_SERVIDOR
+
+;Other domains for DOMINIO.CONTRATADO.ALGO
+www         IN  A   IP_SERVIDOR
+test        IN  A   IP_SERVIDOR
 ```
 
 - Ahora editaremos el archivo reverse.DOMINIO.CONTRATADO.ALGO_ dejandolo convenientemente similar a:
 ```
 $TTL    3D
-@       IN      SOA     ns1.DOMINIO.CONTRATADO.ALGO. root.DOMINIO.CONTRATADO.ALGO. (
+@       IN      SOA     DOMINIO.CONTRATADO.ALGO. mail.responsable. (
                         2          ; Serial // incrementar en cada modificacion
                         8H         ; Refresh
                         2H         ; Retry
@@ -116,13 +121,14 @@ $TTL    3D
                         1D )       ; Negative Cache TTL
 
 ;Name Server INFO for DOMINIO.CONTRATADO.ALGO
-                        NS      ns1.DOMINIO.CONTRATADO.ALGO.
-;Reverse DNS or PTR Record for DOMINIO.CONTRATADO.ALGO
-last octet IP_SERVIDOR  PTR     ns1.DOMINIO.CONTRATADO.ALGO.
-last octet IP_SERVIDOR  PTR     DOMINIO.CONTRATADO.ALGO.
-last octet IP_SERVIDOR  PTR     www.DOMINIO.CONTRATADO.ALGO.
-last octet IP_SERVIDOR  PTR     tienda.DOMINIO.CONTRATADO.ALGO.
+@       IN      NS      ns1.DOMINIO.CONTRATADO.ALGO.
+                NS      ns2.DOMINIO.CONTRATADO.ALGO.
+                TXT     "Reverse Zone-> DOMINIO.CONTRATADO.ALGO"
 
+;Reverse DNS or PTR Record for DOMINIO.CONTRATADO.ALGO
+zz      IN      PTR     ns1.DOMINIO.CONTRATADO.ALGO.
+zz      IN      PTR     DOMINIO.CONTRATADO.ALGO.
+zz      IN      PTR     www.DOMINIO.CONTRATADO.ALGO.
 ```
 - Editamos el archivo _/etc/resolv.conf_ de la siguiente manera
 ```
@@ -131,6 +137,7 @@ search DOMINIO.CONTRATADO.ALGO
 nameserver IP_SERVIDOR
 ```
 - Chequeamos los archivos _/etc/forward.DOMINIO.CONTRATADO.ALGO_ de la siguiente manera `sudo named-checkzone zonename /etc/bind/zonename`
+- Chequeamos toda la configuracion con `sudo named-checkconf -z`
 ```
 sudo named-checkzone DOMINIO.CONTRATADO.ALGO /etc/bind/forward.DOMINIO.CONTRATADO.ALGO
 sudo named-checkzone IP_SERVIDOR.in-addr.arpa /etc/bind/reverse.DOMINIO.CONTRATADO.ALGO
@@ -152,5 +159,6 @@ ns2.dominio.contradado IP_SERVIDOR_VPS
 
 
 ### Lectura de apoyo
+- Usuarios https://www.ionos.es/ayuda/servidores-cloud/administracion-del-servidor/crear-un-usuario-con-permisos-sudo/
 - DNS Server https://servidordebian.org/es/buster/intranet/dns/server
 - DNS Server https://blyx.com/public/docs/bind.html -> mujy util
