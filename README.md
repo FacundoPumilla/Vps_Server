@@ -27,9 +27,9 @@ __Ultima actualizacion 2023/05/25__
 - Verficamos el cambio con la orden `groups USUARIO` si USUARIO pertence al grupo sudo ya podemos loggearnos con ese usuario.
 - Salimos del servidor SSH con el comando `exit`. 
 
-## Logearse con USUARIO e instalar requisitos basicos
+## Loguearse con USUARIO e instalar requisitos basicos
 - Loguearse con la orden `ssh USUARIO@W.X.Y.Z -p port`
-- Instalamos Midnight Commander con la orden `sudo apt install mc` nos pedira nuestra contraseña de usuario FACUNDO.
+- Instalamos **Midnight Commander** con la orden `sudo apt install mc` nos pedira nuestra contraseña de usuario FACUNDO.
 - Al ejecutar _sudo_ por primera vez nos dara un par de consejos haciendo enfasis en la privacidad de los demas.
 - ingresamos a `mc` y dentro de nuestro directorio encontrara el archivo _.bashrc_ y lo editaremos presionando **F2**
 - Dentro del archivo _.bashrc_ al final encontraremos las lineas **#alias ll='ls -l'** y **#alias la='ls -A'** las descomentaremos sacandoles el **#**. De esta manera la proxima vez al ingresar a nuestra consola esta, tendra un aspecto mas agradable con colores para identificar los archivos y directorios.
@@ -50,7 +50,7 @@ IP_SERVIDOR	DOMINIO.CONTRATADO.ALGO
 - Verificamos el funcionamiento del servicio instalado ejecutando `sudo systemctl status named`
 ## Configurar Bind9
 - Ingresando con `sudo mc` buscaremos el directorio `/etc/bin/`
-- Editamos ahora el archivo _named.conf.options_ descomentaremos las lineas de __forwarders__ dejandola asi: (puede usar su servidor DNS a gusto)
+- Editamos ahora el archivo _named.conf.options_ descomentaremos las lineas de __forwarders__ dejandola asi: (puede usar su servidor DNS preferido)
 ```
 forwarders {
     208.67.222.222; #OpenDNS
@@ -58,7 +58,8 @@ forwarders {
     151.202.0.85;   #Verizon
 }
 ```
-- Editamos ahora el archivo _named.conf.local_ agregando 2 zonas de la siguiente manera __Atencion no usar _ en los nombres__
+- Editamos ahora el archivo _named.conf.local_ agregando 2 zonas de la siguiente manera __Atencion no usar _ (guion bajo) en los nombres__
+- Son tantas zonas como dominios alojados.
 ```
 zone "DOMINIO.CONTRATADO.ALGO" { ; (ATENCION PONER MISMO NOMBRE QUE DOMINIO)
  type master;
@@ -154,11 +155,53 @@ ns2.dominio.contradado IP_SERVIDOR_VPS
 - O `dig @IP_SERVIDOR DOMINIO.CONTRATADO.ALGO`
 - O `dig DOMINIO.CONTRATADO.ALGO`
 
+## Instalar Nginx
+- Actualizamos el sistema en busca de cambios `sudo apt update`
+- Instalamos nginx `sudo apt install nginx`
+- Comandos necesarios 
+```
+sudo systemctl stop nginx   #Detener servidor
+sudo systemctl start nginx  #Iniciar servidor
+sudo systemctl reload nginx #Recargar servidor
+```
+- Creamos un directorio de prueba `sudo mkdir -p /var/www/DOMINIO.CONTRATADO.ALGO`
+- Asignamos permisos al usuario actual `sudo chown -R $USER:$USER /var/www/DOMINIO.CONTRATADO.ALGO`
+- Cambiamos permisos `sudo chmod -R 755 /var/www/DOMINIO.CONTRATADO.ALGO`
+- Creamos un archivo `touch /var/www/DOMINIO.CONTRATADO.ALGO/index.html`
+- Editamos el archivo con `mcedit /var/www/DOMINIO.CONTRATADO.ALGO/index.html`, y le colocamos dentro un mensaje de bienvenida.
 
+## Configurar Nginx
+- Creamos un archivo `touch /etc/nginx/sites-availaible/DOMINIO.CONTRATADO.ALGO`
+- y lo editamos con la configuracion basica de nginx:
+```
+server {
+        listen 80;
+        listen [::]:80;
 
+        root /var/www/DOMINIO.CONTRATADO.ALGO;
+        index index.html index.htm index.nginx-debian.html;
 
+        server_name DOMINIO.CONTRATADO.ALGO www.DOMINIO.CONTRATADO.ALGO;
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+}
+```
+- Creamos un enlace simbolico del archivo `sudo ln -s /etc/nginx/sites-available/DOMINIO.CONTRATADO.ALGO /etc/nginx/sites-enabled/`
+- Descomentamos la linea __server_names_hash_bucket_size 64;__ para evitar problemas al agregar mas nombres de dominio.
+- Testeamos que la configuracion de nginx sea correcta `sudo nginx -t`
+- Reiniciamos nginx `sudo systemctl restart nginx`
+- Testeamos el dominio agregado que muestre la pagina de pruebas creada. __DOMINIO.CONTRATADO.ALGO__
+
+## Instalacion de PHP
+
+## Instalacion de MySql
+
+## Instalacion de phpmyadmin
 
 ### Lectura de apoyo
 - Usuarios https://www.ionos.es/ayuda/servidores-cloud/administracion-del-servidor/crear-un-usuario-con-permisos-sudo/
 - DNS Server https://servidordebian.org/es/buster/intranet/dns/server
-- DNS Server https://blyx.com/public/docs/bind.html -> mujy util
+- DNS Server https://blyx.com/public/docs/bind.html -> muy util
+- Nginx https://howtoforge.es/como-instalar-phpmyadmin-con-nginx-y-let-s-encrypt-ssl-en-ubuntu-20-04-lts/
