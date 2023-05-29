@@ -20,6 +20,11 @@ __Ultima actualizacion 2023/05/25__
 - Siendo `W.X.Y.Z` la IP otorgada por el servicio y port el puerto asignado.
 - El servidor respondera esperando que ingreses la clave otorgada para root.
 
+## Seteando TimeZone
+- Para verigicar la zona horaria en el servidor `timedatectl`
+- En caso de necesitar cambiarle `sudo timedatectl set-timezone ZONAHORARIA`
+- La lista de zona se vizualisa con `timedatectl list-timezones`
+
 ## Usuario nuevo y SUDOER
 - Crearemos un nuevo usuario con el comando `adduser USUARIO` responderemos los requisitos y listo.
 - Verificamos que este instalado sudo mediante la orden `sudo ls -la /root` en caso que nos responda _bash: sudo: command not found,_ pasaremos a instalarlo mediante `apt install sudo`.
@@ -36,6 +41,8 @@ __Ultima actualizacion 2023/05/25__
 ## APT
 - Actualizar lista de paquete necesarios ejecutando `sudo apt update`
 - Actualizar paquetes necesarios con `sudo apt upgrade -y`
+- Buscar y ver version de paquete `sudo apt search PAQUETE`
+
 ## HOSTNAME
 - Editar archivo _/etc/hostname_ y en una sola linea incluir el nombre de la maquina por ejemplo `server.local`
 - Editart el archivo _/etc/hosts_ y modificarlo convenientemente a:
@@ -194,14 +201,69 @@ server {
 - Reiniciamos nginx `sudo systemctl restart nginx`
 - Testeamos el dominio agregado que muestre la pagina de pruebas creada. __DOMINIO.CONTRATADO.ALGO__
 
+## Configuracion de acces.log de Nginx
+- https://juantrucupei.wordpress.com/2020/11/03/configurar-personalizar-access-logs-en-nginx/
+
 ## Instalacion de PHP
+- Actualizamos paquetes `sudo apt update`
+- Descargamos la clave de Sury `sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg`
+- Sumamos el repositorio de Sury `sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'`
+- Volvemos a actualizar paquetes
+- Instalamos php y extensiones `sudo sudo apt install php php-cli php-bcmath php-zip php-mysql php-imagick php-memcache php-memcached php-xml php-common php-curl php-gd php-intl php-json php-mbstring php-mysql`
+- En este punto se instala por defecto apache2, pasaremos a desactivarlo `sudo systemctl disable --now apache2`
+- y removeremos todo sus dependencias `sudo apt remove apache2.*`
+- Borramos el dirtectorio de contenido `sudo rm -rf /etc/apache2`
+- Y purgamos cualquier residuo de apache `sudo apt-get purge apache2`
+- En caso de contar con distintas versiones de PHP, existe una herramienta muy util `sudo update-alternatives --config php`
+- O se puede hacer directamente mediante `sudo update-alternatives --set php /usr/bin/phpY.Z` siendo Y.Z la version de php requerida e instalada previamente.
+- Reiniciamos el servicio de __php_fpm__ `sudo service php-fpm restart`
+
+## Re-configuramos nginx
+- En este punto reconfiguramos el arhivo default nginx para ejecutar script de php con php-fpm (si es necesario)
+```
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        root /var/www/html;index index.html index.php index.htm index.nginx-debian.html;
+        server_name _;
+        location / {
+                try_files $uri $uri/ /index.php;
+        }
+        location ~ \.php$ {
+                add_header Access-Control-Allow-Origin *;
+                include snippets/fastcgi-php.conf;
+                fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+        }
+        location ~ /\.ht {
+                deny all;
+        }
+}
+```
 
 ## Instalacion de MySql
+- Actualizamos paquetes `sudo apt update`
+- Instalamos _mariadb-server_ `sudo apt install mariadb-server`
+- Aseguramos _mariadb_ `sudo mysql_secure_installation` y seguimos los pasos. 
+- Darle acceso al usuario creado al principio.
+- Desde la consola ingresamos a _mysql_ con root `sudo mysql -u root -p` (la contraseña expedida al inicio en datos de VPS)
+- Dentro de la terminal de _mysql_ mostramos todas las bases de datos con `show databases;`
+- Mostramos los usuarios dentro de la tabla __user__ de la base de datos __mysql__ `select user from mysql.user`
+- En el resultado figurara el usuario agregado al principio en __adduser__.
+- Incorporamos privilegios al usuario `GRANT ALL PRIVILEGES ON * . * TO '__USUARIO__'@'localhost';`
+- Recargamos los privilegios `FLUSH PRIVILEGES;`
+- Salimos con `exit`
 
 ## Instalacion de phpmyadmin
+- Actualizamos paquetes `sudo apt update`
+- Instalamos _phpmyadmin_ `sudo apt install phpmyadmin -y`, seguimos los pasos indicados.
 
+## 
 ### Lectura de apoyo
 - Usuarios https://www.ionos.es/ayuda/servidores-cloud/administracion-del-servidor/crear-un-usuario-con-permisos-sudo/
 - DNS Server https://servidordebian.org/es/buster/intranet/dns/server
 - DNS Server https://blyx.com/public/docs/bind.html -> muy util
+- Nginx https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-11
 - Nginx https://howtoforge.es/como-instalar-phpmyadmin-con-nginx-y-let-s-encrypt-ssl-en-ubuntu-20-04-lts/
+- Nginx y php https://josuamarcelc.medium.com/standard-nginx-php7-4-with-mysql-installation-in-digital-ocean-2020-fc27678f1cd7
+- Php https://packages.sury.org/php/README.txt
+- Mysql https://www.digitalocean.com/community/tutorials/crear-un-nuevo-usuario-y-otorgarle-permisos-en-mysql-es
