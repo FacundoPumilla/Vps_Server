@@ -250,6 +250,7 @@ server {
 - Mostramos los usuarios dentro de la tabla __user__ de la base de datos __mysql__ `select user from mysql.user`
 - En el resultado figurara el usuario agregado al principio en __adduser__.
 - Incorporamos privilegios al usuario `GRANT ALL PRIVILEGES ON * . * TO '__USUARIO__'@'localhost';`
+- O podemos crear un nuevo usuario desde la consola `CREATE USER 'newuser'@'localhost' IDENTIFIED BY 'password';`
 - Recargamos los privilegios `FLUSH PRIVILEGES;`
 - Salimos con `exit`
 
