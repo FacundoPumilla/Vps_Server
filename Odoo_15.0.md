@@ -12,7 +12,7 @@
 - `sudo apt-get install libtiff5-dev libjpeg8-dev libopenjp2-7-dev zlib1g-dev libfreetype6-dev liblcms2-dev libwebp-dev tcl8.6-dev tk8.6-dev python3-tk libharfbuzz-dev libfribidi-dev libxcb1-dev`
 
 ### Creamos usuario Odoo15
-- `sudo useradd -m -d /odoo14 -U -r -s /bin/bash odoo15`
+- Creamos el usuario y la carpeta que usara `sudo useradd -m -d /odoo15 -U -r -s /bin/bash odoo15`
 
 ### Instalamos y configuramos PostGreSQL
 - `sudo apt install libpq-dev postgresql-client postgresql-client-common python3-psycopg2 postgresql postgresql-contrib`
@@ -26,7 +26,29 @@
 - Instalar wkhtmltopdf (ejemplo cambia version) `sudo apt install ./wkhtmltox_0.12.6.1-2.bullseye_amd64.deb`
 - Corroborar version `wkhtmltopdf --version`
 
+### Instalar y configurar Odoo 15
+- Cambiamos al iusuario odoo15 creado anteriormente `sudo su - odoo15`
+- Clonamos el proyecto desde git `git clone https://www.github.com/odoo/odoo --depth 1 --branch 15.0 /odoo15/odoo15-server/`
+- Creamos un entorno virtual de Python para la instalacion de Odoo 15 `cd /odoo15-server` y  `virtualenv - p python3 env`
+- Siguiente, activamos el entorno `source env/bin/activate`
+- Instalamos los requerimientos `pip install wheel %% pip install -r requeriments.txt`
+- Finalizada la instalacion desactivamos el entorno `deactivate`
+- Creamos un directorio para los addons personalizados `mkdir /odoo15/odoo15-server/custom`
+- Salimos al usuario sudo `exit`
+- Creamos un archivo de configuracion basado en un ejemplo `sudo cp /odoo15/odoo15-server/odoo/debian/odoo.conf /odoo15/odoo15-server/odoo15-server.conf`
+- Editamos el archivo:
+```
+[options]
+; This is the password that allows database operations:
+admin_passwd = ACA_UN_PASSWORD_FUERTE
+db_host = localhost
+db_port = 5432
+db_user = False
+db_password = False
+addons_path = /odoo15/odoo15-server/addons,/odoo15/odoo15-server/custom
+```
 
 
-## Sigue en punto 5:
+
+## Sigue en punto 6:
 - https://gist.github.com/101t/3982252740ce44d3affba37edea6ed33
