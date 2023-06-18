@@ -3,7 +3,7 @@
 # Autor
 - [Pumilla Facundo](https://github.com/FacundoPumilla)
 
-__Ultima actualizacion 2023/05/25__
+__Ultima actualizacion 2023/06/13__
 
     - La configuracion esta escrita para hacer uso exclusivamente de la consola.
     - La instalacion esta basado en un servidor VPS GNU/Linux Debian 11 "bullseye"
@@ -21,16 +21,17 @@ __Ultima actualizacion 2023/05/25__
 - El servidor respondera esperando que ingreses la clave otorgada para root.
 
 ## Seteando TimeZone
-- Para verigicar la zona horaria en el servidor `timedatectl`
+- Para verificar la zona horaria en el servidor `timedatectl`
 - En caso de necesitar cambiarle `sudo timedatectl set-timezone ZONAHORARIA`
-- La lista de zona se vizualisa con `timedatectl list-timezones`
+- La lista de zona se visualiza con `timedatectl list-timezones`
 
 ## Usuario nuevo y SUDOER
 - Crearemos un nuevo usuario con el comando `adduser USUARIO` responderemos los requisitos y listo.
 - Verificamos que este instalado sudo mediante la orden `sudo ls -la /root` en caso que nos responda _bash: sudo: command not found,_ pasaremos a instalarlo mediante `apt install sudo`.
+- En caso de estar logueado como el usuario mismo, nos pasamos al usuario root `su -` e instalamos sudo `apt install sudo` y ejecutamos el siguiente comando ->
 - Asignar permisos al usuario creado mediante la orden `usermod -aG sudo FACUNDO`
 - Verficamos el cambio con la orden `groups USUARIO` si USUARIO pertence al grupo sudo ya podemos loggearnos con ese usuario.
-- Salimos del servidor SSH con el comando `exit`. 
+- Salimos del servidor SSH con el comando `exit` y volvemos a loguearnos. 
 
 ## Loguearse con USUARIO e instalar requisitos basicos
 - Loguearse con la orden `ssh USUARIO@W.X.Y.Z -p port`
@@ -38,19 +39,22 @@ __Ultima actualizacion 2023/05/25__
 - Al ejecutar _sudo_ por primera vez nos dara un par de consejos haciendo enfasis en la privacidad de los demas.
 - ingresamos a `mc` y dentro de nuestro directorio encontrara el archivo _.bashrc_ y lo editaremos presionando **F2**
 - Dentro del archivo _.bashrc_ al final encontraremos las lineas **#alias ll='ls -l'** y **#alias la='ls -A'** las descomentaremos sacandoles el **#**. De esta manera la proxima vez al ingresar a nuestra consola esta, tendra un aspecto mas agradable con colores para identificar los archivos y directorios.
+- Recargar configuracion con el comando `source ~/.bashrc`
 ## APT
 - Actualizar lista de paquete necesarios ejecutando `sudo apt update`
 - Actualizar paquetes necesarios con `sudo apt upgrade -y`
 - Buscar y ver version de paquete `sudo apt search PAQUETE`
 
 ## HOSTNAME
-- Editar archivo _/etc/hostname_ y en una sola linea incluir el nombre de la maquina por ejemplo `server.local`
+- Editar archivo _/etc/hostname_ y en una sola linea incluir el nombre de la maquina por ejemplo `server.local` (o el nombre del dominio contratado)
 - Editart el archivo _/etc/hosts_ y modificarlo convenientemente a:
 ```
 127.0.0.1	localhost localhost.localdomain
 ::1	localhost localhost.localdomain
 IP_SERVIDOR	DOMINIO.CONTRATADO.ALGO
 ```
+- Recargar configuracion con el comando `sudo systemctl restart systemd-hostnamed`
+
 ## Instalar BIND9
 - Instalar el servidor de nombres DNS Bind9 con la orden `apt-get install bind9 bind9utils bind9-dnsutils bind9-doc bind9-host -y` el flag -y es para intalar sin pedir confirmacion.
 - Verificamos la version instalada ejecutando `sudo named -v` (al momento de escribir esta guia esta en la version _BIND 9.16.37-Debian_)

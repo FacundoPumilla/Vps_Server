@@ -5,6 +5,17 @@
 - `sudo apt update`
 - `sudo apt upgrade`
 
+### Descarga de paquetes
+- `wget https://github.com/ctmil/odoo-argentina/archive/refs/heads/15.0.zip`
+- `wget https://github.com/regaby/odoo-custom/archive/refs/heads/15.0-moldeo.zip`
+
+
+
+
+
+
+
+
 ### Instalar Git, PIP, NodeJS
 - `sudo apt install git python3-pip build-essential wget python3-dev python3-venv python3-wheel libxslt-dev libzip-dev libldap2-dev libsasl2-dev python3-setuptools node-less virtualenv`
 
@@ -48,7 +59,33 @@ db_password = False
 addons_path = /odoo15/odoo15-server/addons,/odoo15/odoo15-server/custom
 ```
 
+### Creando el servicio Odoo
+- Creamos el archivo a editar `sudo touch /etc/systemd/system/odoo15.service`
+- Y lo editamos desde `sudo mc` y agregamos el siguiente codigo:
+```
+[Unit]
+Description=Odoo14 Community Edition
+Requires=postgresql.service
+After=network.target postgresql.service
 
+[Service]
+Type=simple
+SyslogIdentifier=odoo14
+PermissionsStartOnly=true
+User=odoo14
+Group=odoo14
+ExecStart=/odoo14/odoo14-server/env/bin/python3 /odoo14/odoo14-server/odoo-bin -c /odoo14/odoo14-server/odoo14-server.conf
+StandardOutput=journal+console
 
+[Install]
+WantedBy=multi-user.target
+```
+- Reiniciar los servicios `sudo systemctl daemon-reload`
+- Iniciar odoo `sudo systecmtl start odoo15`
+- Habilitar odoo para que inicie automaticamente `sudo systemctl enable odoo15`
+- Verificamos el estado de odoo `sudo systemctl status odoo15`
+- Verificamos mensajes de log en el servicio ` sudo journalctl -u odoo15`
+- Verificamos la carga del servicio desde un explorador apuntando a `http://DOMINIO.CONTRATADO.ALGO:8069`
+ 
 ## Sigue en punto 6:
 - https://gist.github.com/101t/3982252740ce44d3affba37edea6ed33
